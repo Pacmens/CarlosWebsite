@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id Int @id @default(autoincrement())
+  name String @unique
+  password String
+  admin Boolean @default(false)
+  participations Participant[]
+}
+
+model Room {
+  id Int @id
+  code String @unique
+  modCode String @unique
+  concluded Boolean @default(false)
+  participants Participant[]
+}
+
+model Participant {
+  id Int @id
+  handle String
+  accountId Int
+  account Account @relation(fields: [accountId], references: [id])
+  roomId Int
+  room Room @relation(fields: [roomId], references: [id])
+  permissionLevel PermissionLevel @default(USER)
+  answers Answer[]
+  votes Vote[]
+
+  @@unique([accountId, roomId])
+}
+
+model Question {
+  id Int @id
+  question String
+  roomId Int
+  completed Boolean
+  answers Answer[]
+}
+
+model Answer {
+  id Int @id
+  answer String
+  questionId Int
+  question Question @relation(fields: [questionId], references: [id])
+  participantId Int
+  participant Participant @relation(fields: [participantId], references: [id])
+  votes Vote[]
+
+  @@unique([questionId, participantId])
+}
+
+model Vote {
+  id Int @id
+  points Int
+  answerId Int
+  answer Answer @relation(fields: [answerId], references: [id])
+  participantId Int
+  participant Participant @relation(fields: [participantId], references: [id])
+  
+  @@unique([answerId, participantId])
+}
+
+enum PermissionLevel {
+  USER
+  MODERATOR
+  ADMIN
+  BACHELOR 
+}

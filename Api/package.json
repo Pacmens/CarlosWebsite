@@ -1,0 +1,29 @@
+{
+  "name": "carlos.api",
+  "version": "1.0.0",
+  "description": "An api for a blind dating question game",
+  "main": "src/index.ts",
+  "scripts": {
+    "watch": "tsc -w",
+    "dev": "nodemon dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "valentine"
+  ],
+  "author": "angrychoclateman",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^3.9.1",
+    "@types/express": "^4.17.13",
+    "@types/node": "^17.0.14",
+    "apollo-server-express": "^3.6.2",
+    "express": "^4.17.2",
+    "graphql": "^15.3.0",
+    "nodemon": "^2.0.15",
+    "prisma": "^3.9.0",
+    "reflect-metadata": "^0.1.13",
+    "type-graphql": "^1.1.1",
+    "typescript": "^4.5.5"
+  }
+}
