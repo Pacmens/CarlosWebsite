@@ -11,7 +11,9 @@ const sessions = new Map<string, number>();
 const prisma = new PrismaClient()
 
 export const makeSessionToken = (id:number) => {
-    return `${crypto.randomBytes(16).toString('base64')}`;
+    const sessionToken = `${crypto.randomBytes(16).toString('base64')}`
+    sessions.set(sessionToken, id);
+    return sessionToken;
 }
 
 const main = async () => {

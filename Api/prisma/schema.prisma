@@ -19,15 +19,25 @@ model Account {
 }
 
 model Room {
-  id Int @id
-  code String @unique
-  modCode String @unique
+  id Int @id @default(autoincrement())
+  name String 
   concluded Boolean @default(false)
+  invites RoomInvite[]
   participants Participant[]
 }
 
+model RoomInvite {
+  id Int @id @default(autoincrement())
+  code String @unique
+  roomId Int
+  room Room @relation(fields: [roomId], references: [id])
+  level PermissionLevel
+
+  @@unique([roomId, level])
+}
+
 model Participant {
-  id Int @id
+  id Int @id @default(autoincrement())
   handle String
   accountId Int
   account Account @relation(fields: [accountId], references: [id])
@@ -41,7 +51,7 @@ model Participant {
 }
 
 model Question {
-  id Int @id
+  id Int @id @default(autoincrement())
   question String
   roomId Int
   completed Boolean
@@ -49,7 +59,7 @@ model Question {
 }
 
 model Answer {
-  id Int @id
+  id Int @id @default(autoincrement())
   answer String
   questionId Int
   question Question @relation(fields: [questionId], references: [id])
@@ -61,19 +71,25 @@ model Answer {
 }
 
 model Vote {
-  id Int @id
+  id Int @id @default(autoincrement())
   points Int
-  answerId Int
+  answerId Int 
   answer Answer @relation(fields: [answerId], references: [id])
   participantId Int
   participant Participant @relation(fields: [participantId], references: [id])
-  
+
   @@unique([answerId, participantId])
-}
+}  
 
 enum PermissionLevel {
   USER
   MODERATOR
   ADMIN
   BACHELOR 
+}
+
+enum RoomState {
+  DRAFT
+  ACTIVE
+  COMPLETED
 }

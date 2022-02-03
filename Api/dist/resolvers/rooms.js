@@ -21,77 +21,76 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RoomResolver = exports.ReturnRooms = exports.ReturnRoom = void 0;
+exports.RoomResolver = exports.Rooms = exports.Room = void 0;
 const type_graphql_1 = require("type-graphql");
-class RoomProps {
-}
-let ReturnRoom = class ReturnRoom {
+const client_1 = require("@prisma/client");
+let Room = class Room {
 };
 __decorate([
     (0, type_graphql_1.Field)(),
-    __metadata("design:type", Boolean)
-], ReturnRoom.prototype, "success", void 0);
-__decorate([
-    (0, type_graphql_1.Field)({ nullable: true }),
-    __metadata("design:type", RoomProps)
-], ReturnRoom.prototype, "room", void 0);
-__decorate([
-    (0, type_graphql_1.Field)(() => [String], { nullable: true }),
-    __metadata("design:type", Array)
-], ReturnRoom.prototype, "errors", void 0);
-ReturnRoom = __decorate([
-    (0, type_graphql_1.ObjectType)()
-], ReturnRoom);
-exports.ReturnRoom = ReturnRoom;
-let ReturnRooms = class ReturnRooms {
-};
+    __metadata("design:type", Number)
+], Room.prototype, "id", void 0);
 __decorate([
     (0, type_graphql_1.Field)(),
-    __metadata("design:type", Boolean)
-], ReturnRooms.prototype, "success", void 0);
+    __metadata("design:type", String)
+], Room.prototype, "name", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(() => [RoomProps], { nullable: true }),
-    __metadata("design:type", Array)
-], ReturnRooms.prototype, "rooms", void 0);
-__decorate([
-    (0, type_graphql_1.Field)(() => [String], { nullable: true }),
-    __metadata("design:type", Array)
-], ReturnRooms.prototype, "errors", void 0);
-ReturnRooms = __decorate([
+    (0, type_graphql_1.Field)(),
+    __metadata("design:type", String)
+], Room.prototype, "permissionLevel", void 0);
+Room = __decorate([
     (0, type_graphql_1.ObjectType)()
-], ReturnRooms);
-exports.ReturnRooms = ReturnRooms;
+], Room);
+exports.Room = Room;
+let Rooms = class Rooms {
+};
+__decorate([
+    (0, type_graphql_1.Field)(() => [Room], { nullable: true }),
+    __metadata("design:type", Array)
+], Rooms.prototype, "rooms", void 0);
+Rooms = __decorate([
+    (0, type_graphql_1.ObjectType)()
+], Rooms);
+exports.Rooms = Rooms;
 let RoomResolver = class RoomResolver {
     getRooms(sessionToken, { prisma, sessions }) {
         return __awaiter(this, void 0, void 0, function* () {
             const accountId = sessions.get(sessionToken);
             if (accountId === undefined)
-                return {
-                    success: false,
-                    errors: ["Session no longer active"]
-                };
-            return prisma.room.findMany({ select: { id: true, name: true, participant: { permissionLevel: true } }, where: { participant: { accountId } } }).then((rooms) => {
-                if (rooms === undefined || rooms === null)
-                    return {
-                        success: false,
-                        errors: ["Couldn't find rooms"]
-                    };
-                return { success: true, rooms };
-            }, () => {
-                return {
-                    success: false,
-                    errors: ["Couldn't find rooms"]
-                };
-            });
+                throw 'Session no longer active';
+            return prisma.account.findUnique({ select: { participations: { select: { room: { select: { id: true, name: true } }, permissionLevel: true } } }, where: { id: accountId } }).then((account) => {
+                if (!account)
+                    throw "Couldn't find rooms";
+                return { rooms: account.participations.map(({ room: { id, name }, permissionLevel }) => ({ id, name, permissionLevel })) };
+            }, () => { throw 'Couldn\'t find rooms'; });
         });
     }
-    joinRoom(roomCode, { prisma, sessions }) {
+    joinRoom(sessionToken, code, handle, { prisma, sessions }) {
         return __awaiter(this, void 0, void 0, function* () {
+            const accountId = sessions.get(sessionToken);
+            if (accountId === undefined)
+                throw "Session no longer active";
+            return prisma.roomInvite.findUnique({ select: { roomId: true, room: { select: { name: true } }, level: true }, where: { code } })
+                .then((roomInvite) => {
+                if (!roomInvite)
+                    throw 'Code doesn\'t exist';
+                const participantToCreate = { roomId: roomInvite.roomId, permissionLevel: roomInvite.level, accountId, handle };
+                return prisma.participant
+                    .create({ select: { roomId: true, permissionLevel: true }, data: participantToCreate })
+                    .then(({ roomId, permissionLevel }) => {
+                    return {
+                        id: roomId,
+                        name: roomInvite.room.name,
+                        permissionLevel
+                    };
+                }, () => { throw "couldn't join room"; });
+            });
         });
     }
 };
 __decorate([
-    (0, type_graphql_1.Query)(() => ReturnRooms),
+    (0, type_graphql_1.Authorized)(),
+    (0, type_graphql_1.Query)(() => Rooms),
     __param(0, (0, type_graphql_1.Arg)("session")),
     __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
@@ -99,11 +98,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], RoomResolver.prototype, "getRooms", null);
 __decorate([
-    (0, type_graphql_1.Mutation)(() => ),
-    __param(0, (0, type_graphql_1.Arg)("code")),
-    __param(1, (0, type_graphql_1.Ctx)()),
+    (0, type_graphql_1.Authorized)(),
+    (0, type_graphql_1.Mutation)(() => Room),
+    __param(0, (0, type_graphql_1.Arg)("session")),
+    __param(1, (0, type_graphql_1.Arg)("code")),
+    __param(2, (0, type_graphql_1.Arg)("displayName")),
+    __param(3, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, String, String, Object]),
     __metadata("design:returntype", Promise)
 ], RoomResolver.prototype, "joinRoom", null);
 RoomResolver = __decorate([

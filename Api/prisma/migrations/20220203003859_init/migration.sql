@@ -11,7 +11,8 @@ CREATE TABLE `Account` (
 
 -- CreateTable
 CREATE TABLE `Room` (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
     `code` VARCHAR(191) NOT NULL,
     `modCode` VARCHAR(191) NOT NULL,
     `concluded` BOOLEAN NOT NULL DEFAULT false,
@@ -23,7 +24,7 @@ CREATE TABLE `Room` (
 
 -- CreateTable
 CREATE TABLE `Participant` (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `handle` VARCHAR(191) NOT NULL,
     `accountId` INTEGER NOT NULL,
     `roomId` INTEGER NOT NULL,
@@ -35,7 +36,7 @@ CREATE TABLE `Participant` (
 
 -- CreateTable
 CREATE TABLE `Question` (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `question` VARCHAR(191) NOT NULL,
     `roomId` INTEGER NOT NULL,
     `completed` BOOLEAN NOT NULL,
@@ -45,7 +46,7 @@ CREATE TABLE `Question` (
 
 -- CreateTable
 CREATE TABLE `Answer` (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `answer` VARCHAR(191) NOT NULL,
     `questionId` INTEGER NOT NULL,
     `participantId` INTEGER NOT NULL,
@@ -56,7 +57,7 @@ CREATE TABLE `Answer` (
 
 -- CreateTable
 CREATE TABLE `Vote` (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `points` INTEGER NOT NULL,
     `answerId` INTEGER NOT NULL,
     `participantId` INTEGER NOT NULL,

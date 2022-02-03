@@ -27,6 +27,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionResolver = exports.Session = void 0;
 const type_graphql_1 = require("type-graphql");
 const crypto_1 = __importDefault(require("crypto"));
+const makeSessionToken = (id, sessions) => {
+    const sessionToken = `${crypto_1.default.randomBytes(16).toString('base64')}`;
+    sessions.set(sessionToken, id);
+    return sessionToken;
+};
 let Session = class Session {
 };
 __decorate([
@@ -45,23 +50,19 @@ Session = __decorate([
     (0, type_graphql_1.ObjectType)()
 ], Session);
 exports.Session = Session;
-const makeSessionToken = (id) => {
-    const session = `${crypto_1.default.randomBytes(16).toString('base64')}`;
-    return session;
-};
 let SessionResolver = class SessionResolver {
-    login(name, password, { prisma }) {
+    login(name, password, { prisma, sessions }) {
         return __awaiter(this, void 0, void 0, function* () {
             const userId = yield prisma.account.findFirst({ select: { id: true }, where: { name, password } });
             if (userId === null)
                 return { success: false, errors: ["couldnt find user"] };
-            return { success: true, sessionToken: makeSessionToken(userId.id) };
+            return { success: true, sessionToken: makeSessionToken(userId.id, sessions) };
         });
     }
-    makeAccount(name, password, { prisma }) {
+    makeAccount(name, password, { prisma, sessions }) {
         return __awaiter(this, void 0, void 0, function* () {
             return prisma.account.create({ data: { name, password } }).then((acc) => {
-                return { success: true, sessionToken: makeSessionToken(acc.id) };
+                return { success: true, sessionToken: makeSessionToken(acc.id, sessions) };
             }, (error) => {
                 return { success: false, errors: [error] };
             });

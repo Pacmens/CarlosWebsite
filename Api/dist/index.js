@@ -24,7 +24,9 @@ const crypto_1 = __importDefault(require("crypto"));
 const sessions = new Map();
 const prisma = new client_1.PrismaClient();
 const makeSessionToken = (id) => {
-    return `${crypto_1.default.randomBytes(16).toString('base64')}`;
+    const sessionToken = `${crypto_1.default.randomBytes(16).toString('base64')}`;
+    sessions.set(sessionToken, id);
+    return sessionToken;
 };
 exports.makeSessionToken = makeSessionToken;
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
